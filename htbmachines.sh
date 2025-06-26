@@ -218,6 +218,20 @@ function getOSDifficultyMachines() {
   fi
 }
 
+function getSkill() {
+  skill="$1"
+  
+  skill_checker="$(cat bundle.js | grep "skills: " -B 6 | grep "$skill" -i -B 6 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | awk '{$1=$1; print}' | sort | column)"
+
+  if [ "$skill_checker" ]; then
+    echo -e "\n${yellowColour}[+]${endColour} ${grayColour} Listando las máquinas que toquen la vulnerabilidad${endColour} ${greenColour}$skill${endColour}\n"
+    cat bundle.js | grep "skills: " -B 6 | grep "$skill" -i -B 6 | grep "name: " | awk 'NF{print $NF}' | tr -d '"' | tr -d ',' | awk '{$1=$1; print}' | sort | column
+    echo ""
+  else
+    echo -e "\n${redColour}[!] La vulnerabilidad proporcionada NO existe${endColour}\n"
+  fi
+}
+
 # Indicadores
 declare -i parameter_counter=0 # declare se utiliza para declarar variables, el parametro -i es para que sea de valor entero
 declare -i difficulty=0
@@ -225,7 +239,7 @@ declare -i sistemOS=0
 
 
 # Menu de opciones
-while getopts "um:d:i:y:o:h" arg; do
+while getopts "um:d:i:y:o:s:h" arg; do
   case $arg in
     u) let parameter_counter+=1;;
     m) machineName=$OPTARG; let parameter_counter+=2;; # let sirve para hacer operaciones aritmeticas
@@ -233,6 +247,7 @@ while getopts "um:d:i:y:o:h" arg; do
     i) ipAddress=$OPTARG; let parameter_counter+=4;;
     y) machineName=$OPTARG; let parameter_counter+=5;; # let sirve para hacer operaciones aritmeticas
     o) os=$OPTARG; sistemOS=1; let parameter_counter+=6;; # let sirve para hacer operaciones aritmeticas
+    s) skill=$OPTARG; let parameter_counter+=7;; # let sirve para hacer operaciones aritmeticas
     h) ;;
   esac
 done
@@ -249,6 +264,8 @@ elif [ $parameter_counter -eq 5 ]; then
   getYoutubeLink $machineName
 elif [ $parameter_counter -eq 6 ]; then
   getOSMachine $os
+elif [ "$parameter_counter" -eq 7 ]; then
+  getSkill "$skill"
 elif [ $difficulty -eq 1 ] && [ $sistemOS -eq 1 ]; then
   getOSDifficultyMachines $levelMachine $os
 else
